@@ -1,4 +1,4 @@
-"""Kaggle runner: one experiment per push (CLAUDE.md §4).
+"""Kaggle runner: one experiment per push.
 
 Set GIT_REF, CONFIG, RUN_ID and MODE below, commit and push the repo, then:
     kaggle kernels push -p runner/kaggle
@@ -263,7 +263,7 @@ def main() -> None:
     if MODE == "keycheck":
         print("key loaded:", bool(key))
         print("ntfy topic loaded:", bool(topic))
-        notify(topic, "Kaggle keycheck", f"{RUN_ID}: OPENROUTER_API_KEY loaded: {bool(key)}, NTFY_TOPIC loaded: True")
+        notify(topic, "Kaggle keycheck", f"{RUN_ID}: OPENROUTER_API_KEY loaded: {bool(key)}, NTFY_TOPIC loaded: {bool(topic)}")
         return
 
     if not key:
