@@ -1,7 +1,8 @@
 """Kaggle runner: one experiment per push.
 
 Set GIT_REF, CONFIG, RUN_ID and MODE below, commit and push the repo, then:
-    kaggle kernels push -p runner/kaggle
+    kaggle kernels push -p runner/kaggle --no-run
+and start the run on the website (Edit -> Save Version -> Save & Run All): CLI-started runs can't read Secrets (P10).
 MODE "keycheck" only checks the Kaggle Secrets (step 0.7). MODE "run" runs the experiment.
 Results: /kaggle/working/<RUN_ID>.zip (simulations + logs) and /kaggle/working/manifest.json.
 Progress is printed to the Kaggle log every minute and pushed to your phone (ntfy) at start, 25/50/75% and the end.
@@ -66,7 +67,10 @@ def get_secret(name: str) -> str | None:
         from kaggle_secrets import UserSecretsClient
 
         return UserSecretsClient().get_secret(name)
-    except Exception:
+    except Exception as e:  # the reason (never the value) is what we need to debug a missing secret
+        cause = e.__cause__
+        body = cause.read()[:300] if hasattr(cause, "read") else b""
+        log(f"Kaggle secret {name} not readable: {type(e).__name__}: {e} (cause: {cause!r}, reply: {body!r})")
         return os.environ.get(name)
 
 
@@ -261,6 +265,12 @@ def main() -> None:
     topic = get_secret("NTFY_TOPIC")
     key = get_secret("OPENROUTER_API_KEY")
     if MODE == "keycheck":
+        try:  # runs need internet (GitHub, Hugging Face, OpenRouter); Kaggle turns it off without phone verification
+            urllib.request.urlopen("https://github.com", timeout=10)
+            print("internet: True")
+        except Exception as e:
+            print(f"internet: False ({type(e).__name__}: {e})")
+        print("secrets token present:", "KAGGLE_USER_SECRETS_TOKEN" in os.environ)  # set only when secrets are attached
         print("key loaded:", bool(key))
         print("ntfy topic loaded:", bool(topic))
         notify(topic, "Kaggle keycheck", f"{RUN_ID}: OPENROUTER_API_KEY loaded: {bool(key)}, NTFY_TOPIC loaded: {bool(topic)}")

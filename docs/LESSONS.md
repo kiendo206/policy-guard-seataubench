@@ -2,6 +2,16 @@
 
 Mistakes and the rule each one produced. Format: CLAUDE.md §7 step 4.
 
+### L5  2026-10-24  Kaggle Secrets are unreadable in CLI-started runs
+- What happened: the keycheck printed `key loaded: False` after every `kaggle kernels push`, even with internet on, the secrets token present and the labels checked. The secrets service answered HTTP 400.
+- Root cause: Kaggle-side behaviour. The same code read both secrets in the interactive editor and in a "Save & Run All" started from the website, but never in a run started by the CLI push (tested again after a website run).
+- Rule from now on: `kaggle kernels push --no-run`, then start the run on the website. (CLAUDE.md §4 step 3, §9 P10.)
+
+### L4  2026-10-24  A swallowed exception hid the real error
+- What happened: `get_secret` used a bare `except Exception:` and returned None, so a failing secret looked like a missing one, and my first theory (internet off) cost a debugging round.
+- Root cause: error handling that discarded the reason; then a theory stated before evidence.
+- Rule from now on: never swallow an exception without logging its type, message and cause. Add evidence (here: internet, token, HTTP cause) before proposing a fix. (Fixed in `run.py`.)
+
 ### L3  2026-10-24  The kaggle CLI was silently installed in an old version
 - What happened: Kaggle's new key could not be used: kaggle 1.7.4.5 only reads `kaggle.json`, and `uv tool upgrade` said "nothing to upgrade".
 - Root cause: `uv tool install kaggle` ran on the system Python 3.10. kaggle ≥ 2.0 needs Python ≥ 3.11, so uv picked the last version that works on 3.10.
