@@ -58,6 +58,17 @@ def test_patch_judge_on_real_config(tmp_path):
         run.patch_judge(tmp_path)
 
 
+def test_code_check_passes_on_same_file_and_fails_on_change(tmp_path):
+    (tmp_path / "runner" / "kaggle").mkdir(parents=True)
+    committed = tmp_path / "runner" / "kaggle" / "run.py"
+    text = (ROOT / "runner" / "kaggle" / "run.py").read_text(encoding="utf-8")
+    committed.write_bytes(text.replace("\n", "\r\n").encode("utf-8"))  # a Windows checkout: CRLF must not matter
+    run.check_code_matches_repo(tmp_path)
+    committed.write_text(text.replace('MODE = "', 'MODE = "x'), encoding="utf-8")
+    with pytest.raises(RuntimeError, match="commit and git push first"):
+        run.check_code_matches_repo(tmp_path)
+
+
 def test_progress_line():
     assert run.progress_line(0, 60, 30) == "[--------------------] 0/60 sims (0%) | elapsed 0h00m | ETA ?"
     assert run.progress_line(15, 60, 1800) == "[#####---------------] 15/60 sims (25%) | elapsed 0h30m | ETA 1h30m"

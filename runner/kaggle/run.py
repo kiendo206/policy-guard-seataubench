@@ -9,6 +9,7 @@ Progress is printed to the Kaggle log every minute and pushed to your phone (ntf
 """
 
 import json
+import linecache
 import os
 import re
 import shutil
@@ -21,10 +22,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 # --- Set these for every push --------------------------------------------------------------------
-GIT_REF = "main"  # a commit SHA or tag for real experiments; the resolved SHA goes into the manifest
+GIT_REF = "main"  # branch, tag or SHA; the run stops unless this file equals run.py at GIT_REF, and the SHA goes into the manifest
 CONFIG = "configs/runs/smoke_S4_dev2.yaml"
-RUN_ID = "20261024-2330_keycheck"
-MODE = "keycheck"  # "keycheck" or "run"
+RUN_ID = "20261025-0300_smoke_q3-4b_S4_dev2_t1"
+MODE = "run"  # "keycheck" or "run"
 
 # --- Fixed setup (CLAUDE.md §3) -------------------------------------------------------------------
 REPO_URL = "https://github.com/kiendo206/policy-guard-seataubench.git"
@@ -116,6 +117,19 @@ def tau2_cmd(cfg: dict, run_id: str) -> list[str]:
     return cmd
 
 
+def running_source() -> str:
+    """The text of the code that is executing (works for a file and for Kaggle's notebook cell)."""
+    return "".join(linecache.getlines(main.__code__.co_filename))
+
+
+def check_code_matches_repo(repo: Path) -> None:
+    """The manifest SHA must describe the code that ran: refuse an uncommitted or unpushed run.py."""
+    norm = lambda s: s.replace("\r\n", "\n").strip()
+    committed = (repo / "runner" / "kaggle" / "run.py").read_text(encoding="utf-8")
+    if not running_source() or norm(running_source()) != norm(committed):
+        raise RuntimeError(f"run.py differs from runner/kaggle/run.py at GIT_REF={GIT_REF!r}: commit and git push first")
+
+
 def patch_judge(bench: Path) -> str:
     """P1: point the NL-assertion judge at OpenRouter. Returns the patched line."""
     f = bench / "src" / "tau2" / "config.py"
@@ -170,6 +184,7 @@ def setup_code(manifest: dict) -> None:
     sh(["git", "clone", "-q", REPO_URL, REPO])
     sh(["git", "checkout", "-q", GIT_REF], cwd=REPO)
     manifest["repo_sha"] = sh(["git", "rev-parse", "HEAD"], cwd=REPO)
+    check_code_matches_repo(REPO)
     BENCH.mkdir(parents=True)
     sh(["git", "init", "-q"], cwd=BENCH)
     sh(["git", "fetch", "-q", "--depth", "1", BENCH_URL, BENCH_SHA], cwd=BENCH)
