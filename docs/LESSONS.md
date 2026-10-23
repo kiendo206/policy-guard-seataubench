@@ -2,6 +2,16 @@
 
 Mistakes and the rule each one produced. Format: CLAUDE.md §7 step 4.
 
+### L8  2026-10-25  A `--no-run` (Quick Save) version breaks website runs
+- What happened: after `kaggle kernels push --no-run`, the website's "Save & Run All" treated the script as a notebook and crashed before our code ran.
+- Root cause: Kaggle-side; observed, not explained. A normal push followed by the website run works.
+- Rule from now on: normal `kaggle kernels push` (its CLI run stops harmlessly without secrets), then start the real run on the website. (CLAUDE.md §4 step 3, P10.)
+
+### L7  2026-10-25  `.gitignore` pattern `runs/` silently ignored `configs/runs/`
+- What happened: the smoke config was never committed; the run failed with FileNotFoundError on Kaggle.
+- Root cause: a `.gitignore` pattern without a leading `/` matches at any depth. I wrote `runs/` meaning the top-level folder only. My "expect 6 files" before the commit was not compared against the real staged list.
+- Rule from now on: anchor top-level ignores (`/runs/`, `/data/`). Before committing new folders, check `git status` lists them, and use `git check-ignore -v <file>` when a file is missing.
+
 ### L6  2026-10-25  Kaggle edits the script it stores
 - What happened: smoke run 20261025-0300 stopped in 6 s: the committed-code check said run.py differed from GitHub, but laptop == GitHub.
 - Root cause: Kaggle adds a `# %% [code]` line at the top of a pushed script; the check compared exact text.

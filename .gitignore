@@ -1,7 +1,7 @@
 # Raw run outputs: large, archived as a Kaggle dataset or GitHub release instead
-runs/
+/runs/
 # Downloaded models and local tau2 simulations (e.g. the 126 MB fastText model)
-data/
+/data/
 
 # Secrets: never commit
 .env

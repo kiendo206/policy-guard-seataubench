@@ -1,8 +1,9 @@
 """Kaggle runner: one experiment per push.
 
 Set GIT_REF, CONFIG, RUN_ID and MODE below, commit and push the repo, then:
-    kaggle kernels push -p runner/kaggle --no-run
-and start the run on the website (Edit -> Save Version -> Save & Run All): CLI-started runs can't read Secrets (P10).
+    kaggle kernels push -p runner/kaggle
+wait until that CLI-started run ends (it can't read Secrets), then start the real run on the website
+(Edit -> Save Version -> Save & Run All). Don't use --no-run: those versions crash on the website (P10).
 MODE "keycheck" only checks the Kaggle Secrets (step 0.7). MODE "run" runs the experiment.
 Results: /kaggle/working/<RUN_ID>.zip (simulations + logs) and /kaggle/working/manifest.json.
 Progress is printed to the Kaggle log every minute and pushed to your phone (ntfy) at start, 25/50/75% and the end.
@@ -24,7 +25,7 @@ from pathlib import Path
 # --- Set these for every push --------------------------------------------------------------------
 GIT_REF = "main"  # branch, tag or SHA; the run stops unless this file equals run.py at GIT_REF, and the SHA goes into the manifest
 CONFIG = "configs/runs/smoke_S4_dev2.yaml"
-RUN_ID = "20261025-0315_smoke_q3-4b_S4_dev2_t1"
+RUN_ID = "20261025-0330_smoke_q3-4b_S4_dev2_t1"
 MODE = "run"  # "keycheck" or "run"
 
 # --- Fixed setup (CLAUDE.md §3) -------------------------------------------------------------------

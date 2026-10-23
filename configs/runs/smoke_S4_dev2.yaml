@@ -1,0 +1,8 @@
+# Smoke run (step 0.8): does the pipeline work end to end, and does the NL judge work?
+# Task 2 has an NL assertion and one return; task 57 expects no database change (a restraint task).
+scenario: l2_domain            # S4; use "english" for S1
+agent_model: Qwen/Qwen3-4B-Instruct-2507
+task_ids: ["2", "57"]          # or instead: task_list: configs/splits/dev30.json
+num_trials: 1
+max_concurrency: 2
+seed: 300                      # tau2's default seed, written down explicitly
