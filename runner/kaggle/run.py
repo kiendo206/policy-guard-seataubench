@@ -24,7 +24,7 @@ from pathlib import Path
 # --- Set these for every push --------------------------------------------------------------------
 GIT_REF = "main"  # branch, tag or SHA; the run stops unless this file equals run.py at GIT_REF, and the SHA goes into the manifest
 CONFIG = "configs/runs/smoke_S4_dev2.yaml"
-RUN_ID = "20261025-0300_smoke_q3-4b_S4_dev2_t1"
+RUN_ID = "20261025-0315_smoke_q3-4b_S4_dev2_t1"
 MODE = "run"  # "keycheck" or "run"
 
 # --- Fixed setup (CLAUDE.md §3) -------------------------------------------------------------------
@@ -124,7 +124,9 @@ def running_source() -> str:
 
 def check_code_matches_repo(repo: Path) -> None:
     """The manifest SHA must describe the code that ran: refuse an uncommitted or unpushed run.py."""
-    norm = lambda s: s.replace("\r\n", "\n").strip()
+    def norm(s: str) -> str:  # Kaggle adds "# %% [code]" cell markers to the stored script
+        return "\n".join(l for l in s.replace("\r\n", "\n").split("\n") if not l.startswith("# %%")).strip()
+
     committed = (repo / "runner" / "kaggle" / "run.py").read_text(encoding="utf-8")
     if not running_source() or norm(running_source()) != norm(committed):
         raise RuntimeError(f"run.py differs from runner/kaggle/run.py at GIT_REF={GIT_REF!r}: commit and git push first")

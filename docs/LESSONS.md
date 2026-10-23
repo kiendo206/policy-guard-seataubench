@@ -2,6 +2,11 @@
 
 Mistakes and the rule each one produced. Format: CLAUDE.md §7 step 4.
 
+### L6  2026-10-25  Kaggle edits the script it stores
+- What happened: smoke run 20261025-0300 stopped in 6 s: the committed-code check said run.py differed from GitHub, but laptop == GitHub.
+- Root cause: Kaggle adds a `# %% [code]` line at the top of a pushed script; the check compared exact text.
+- Rule from now on: the check ignores `# %%` marker lines (code + test in `tests/test_runner.py`). When comparing files across systems, compare all three copies (laptop, GitHub, Kaggle via `kaggle kernels pull`) before blaming the user.
+
 ### L5  2026-10-24  Kaggle Secrets are unreadable in CLI-started runs
 - What happened: the keycheck printed `key loaded: False` after every `kaggle kernels push`, even with internet on, the secrets token present and the labels checked. The secrets service answered HTTP 400.
 - Root cause: Kaggle-side behaviour. The same code read both secrets in the interactive editor and in a "Save & Run All" started from the website, but never in a run started by the CLI push (tested again after a website run).

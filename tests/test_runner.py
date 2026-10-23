@@ -64,6 +64,8 @@ def test_code_check_passes_on_same_file_and_fails_on_change(tmp_path):
     text = (ROOT / "runner" / "kaggle" / "run.py").read_text(encoding="utf-8")
     committed.write_bytes(text.replace("\n", "\r\n").encode("utf-8"))  # a Windows checkout: CRLF must not matter
     run.check_code_matches_repo(tmp_path)
+    committed.write_text("# %% [code]\n" + text, encoding="utf-8")  # Kaggle's cell marker must not matter
+    run.check_code_matches_repo(tmp_path)
     committed.write_text(text.replace('MODE = "', 'MODE = "x'), encoding="utf-8")
     with pytest.raises(RuntimeError, match="commit and git push first"):
         run.check_code_matches_repo(tmp_path)
