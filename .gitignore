@@ -13,4 +13,5 @@ docs/LEARNING.md
 # Archives and environments
 *.zip
 .venv/
+_out/
 __pycache__/

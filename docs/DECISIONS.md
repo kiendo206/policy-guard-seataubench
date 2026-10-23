@@ -15,4 +15,5 @@ Every design decision, with date and reason. Newest first.
 ### D1  2026-10-24  The Kaggle runner shows progress and announces when it finishes
 - Decision: `runner/kaggle/run.py` (step 0.6) prints progress while tau2 runs (simulations done / planned, elapsed time, estimated time left) and sends a notification when the run ends, whether it succeeded or failed.
 - Reason: requested by the student. It saves GPU time by showing early when a run is too slow or stuck, and he doesn't need to keep checking `kaggle kernels status`.
-- Open: the notification channel is chosen in step 0.6.
+- Channel (chosen 2026-10-24): **ntfy** push to the phone. The topic name is kept in the Kaggle Secret `NTFY_TOPIC`, because anyone who knows it can read the messages. Messages hold only the run ID, counts and timings, never secrets.
+- Runner details: progress is printed every 60 s by counting `results.json`, which tau2 rewrites atomically after each simulation. Pushes go out at start, 25/50/75%, finish and failure. OpenRouter spend (user simulator + judge) = the key's `usage` (from `/api/v1/key`) after the run minus before, because tau2 does not record judge cost. tau2 stops at 11 h (P8).
