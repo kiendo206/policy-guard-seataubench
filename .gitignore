@@ -1,0 +1,14 @@
+# Raw run outputs: large, archived as a Kaggle dataset or GitHub release instead
+runs/
+# Downloaded models and local tau2 simulations (e.g. the 126 MB fastText model)
+data/
+
+# Secrets: never commit
+.env
+kaggle.json
+CLAUDE.md
+
+# Archives and environments
+*.zip
+.venv/
+__pycache__/
