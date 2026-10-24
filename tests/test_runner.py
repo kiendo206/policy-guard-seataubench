@@ -87,6 +87,13 @@ def test_progress_line():
     assert run.progress_line(15, 60, 1800) == "[#####---------------] 15/60 sims (25%) | elapsed 0h30m | ETA 1h30m"
 
 
+def test_tau2_status_shows_latest_line(tmp_path):
+    log = tmp_path / "tau2.log"
+    assert run.tau2_status(log) == ""  # not written yet
+    log.write_text("noise\nStatus: 6/8 complete. 2 running\nother\nStatus: 7/8 complete. 1 running: 29.0(8s R1)\n")
+    assert run.tau2_status(log) == "7/8 complete. 1 running: 29.0(8s R1)"
+
+
 def test_count_done_and_summarize(tmp_path):
     p = tmp_path / "results.json"
     assert run.count_done(p) == 0  # not written yet

@@ -2,6 +2,23 @@
 
 One entry per Kaggle run, newest first. Format: CLAUDE.md §7 step 3.
 
+## 20261025-0145_pilot_q3-4b_S4_dev8_t1  (2026-10-25, Phase 0 pilot, OK)
+- Goal: test concurrency 8, the DeepInfra pin (D4), and the real time and $ per conversation before the baseline.   - Config: `configs/runs/pilot_S4_dev8_c8.yaml` (dev tasks 3, 10, 16, 29, 37, 50, 72, 110; concurrency 8; context 24,576)   - Git SHA: 2c9c010
+- Result (`results/summary/20261025-0145_pilot_q3-4b_S4_dev8_t1.csv`): 8/8 sims, 0 crashed, pass^1 0.25 (tasks 10 and 50; `pass1_tau2` also 0.25), avg 22.2 turns, 279.5 s/sim at concurrency 8, language correctness 1.0, user simulator DeepInfra:61 (**pin works**), retries `29:ContextWindowExceededError`.
+- Time: 29.6 min session (~10 min setup; first 7 chats done after ~5.5 min; ~10 more min for task 29's hidden rerun).   - Cost: $0.0278 (manifest, after the 60 s wait) ≈ $0.0035/sim incl. judge (running total ≈ $0.032).
+- Surprises: (1) task 29's first attempt overflowed the 24,576-token context, and tau2 silently reran it and saved only the rerun (L12 → D5, D6). (2) The ETA said "1 min left" for 10 min (L11).
+- Next: context 32,768 (D6), the overflow rule (D5) in `summarize_run.py`, the tau2 status in the progress line, then S4 baseline `20261025-0230`.
+
+## 20261025-0330_smoke_q3-4b_S4_dev2_t1  (2026-10-24 local, Phase 0 smoke, OK)
+- Goal: pipeline end to end on S4; does the NL judge work; measure s/sim and $/sim.   - Config: `configs/runs/smoke_S4_dev2.yaml` (tasks 2, 57; 1 trial; concurrency 2)   - Git SHA: dbe2746
+- Result (`results/summary/20261025-0330_smoke_q3-4b_S4_dev2_t1.csv`): 2/2 sims, 0 crashed, pass^1 0.0, avg 16 turns, 135.7 s/sim, user simulator $0.00092/sim, language correctness 1.0.
+  - Task 2 (action + NL assertion): DB 0, NL 0. The judge (openrouter gpt-4.1-mini) gave a justified verdict (agent listed 9 t-shirt options, expected 10). **P1 verified.**
+  - Task 57 (restraint: no DB change expected): DB 0. The agent never authenticated the user, attempted `cancel_pending_order` without an explicit confirmation (the tool refused), then wrote `modify_pending_order_address`. An over-action example of what G2 targets.
+- Time: 12.0 min session (≈ 0.2 GPU-h; about 10 min of it is setup: vLLM 0.32.0 install + model download + start).   - Cost: OpenRouter spend read as $0.0012, which is below tau2's user cost of $0.0018, so it is undercounted (L10). **Real spend $0.004 (from the OpenRouter Activity page, student; running total $0.004)**: user sim $0.0018 (tau2) + about $0.002 that is most likely the single judge call.
+- User simulator verified: OpenRouter raw replies name `qwen/qwen3-235b-a22b-2507`, served by 3 providers (Parasail 4, DeepInfra 4, Venice 2 calls). About 5 calls and 6k prompt tokens per conversation.
+- What went wrong / surprises: the spend undercount (L10); the run-ID date is off by one: the local date was 2026-10-24 (L9). It finished in 12 min, not the estimated 30–45.
+- Next: 0.9 baseline estimate from these numbers.
+
 ## 20261025-0315_smoke_q3-4b_S4_dev2_t1  (2026-10-25, Phase 0 smoke, FAILED ×3 before tau2)
 - Goal: retry of the smoke run.   - Config: `configs/runs/smoke_S4_dev2.yaml`   - Git SHA: (attempt 3) main after the L6 fix
 - Result: no simulations.

@@ -2,6 +2,26 @@
 
 Mistakes and the rule each one produced. Format: CLAUDE.md §7 step 4.
 
+### L12  2026-10-25  tau2 hides agent failures by silently rerunning conversations
+- What happened: in the pilot, task 29's agent prompt exceeded the context limit; tau2 reran the whole chat and saved only the rerun. No field in results.json shows it.
+- Root cause: tau2 retries *any* exception up to 3 times (`runner/progress.py`) and drops chats that fail every retry from its metrics (`metrics/agent_metrics.py:145`). It cannot tell a server hiccup from an agent failure.
+- Rule from now on: every summary counts retries from tau2.log (`retries`, `n_overflow` columns); overflow reruns score 0 (D5); context raised to 32,768 (D6). Read benchmark error handling before trusting its scores. (CLAUDE.md §9 P12.)
+
+### L11  2026-10-25  The ETA ignored the tail of a run
+- What happened: the progress line said "ETA 0h01m" for 10 minutes while the last chat was being rerun.
+- Root cause: the ETA assumes every conversation takes the same time, and it can't see reruns.
+- Rule from now on: the progress line also prints tau2's own status ("N running", "R1" = rerun). Treat the ETA as a rough guide; the tail of a run (the last few chats, any reruns) is slower than the average.
+
+### L10  2026-10-24  OpenRouter spend read too early
+- What happened: the manifest's `openrouter_spend_usd` ($0.0012) was below tau2's own user-simulator cost ($0.0018), although it should also include the judge.
+- Root cause (hypothesis): the `/api/v1/key` usage counter updates with a delay, and the runner read it right after tau2 ended.
+- Rule from now on: the runner waits 60 s before the final usage read (code). Cross-check a run's spend once on openrouter.ai → Activity; trust the larger of the two numbers.
+
+### L9  2026-10-24  Wrong date in run IDs
+- What happened: the smoke run IDs say `20261025`, but the local date was 2026-10-24 (Kaggle: 2026-10-23 20:18 UTC = 03:18 UTC+7).
+- Root cause: I guessed the date instead of reading the clock.
+- Rule from now on: take a run ID's date and time from the laptop clock (`Get-Date -Format yyyyMMdd-HHmm`) when setting `RUN_ID`. Finished IDs are not renamed, so they stay linked to their files.
+
 ### L8  2026-10-25  A `--no-run` (Quick Save) version breaks website runs
 - What happened: after `kaggle kernels push --no-run`, the website's "Save & Run All" treated the script as a notebook and crashed before our code ran.
 - Root cause: Kaggle-side; observed, not explained. A normal push followed by the website run works.

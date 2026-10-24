@@ -24,8 +24,8 @@ from pathlib import Path
 
 # --- Set these for every push --------------------------------------------------------------------
 GIT_REF = "main"  # branch, tag or SHA; the run stops unless this file equals run.py at GIT_REF, and the SHA goes into the manifest
-CONFIG = "configs/runs/pilot_S4_dev8_c8.yaml"
-RUN_ID = "20261025-0145_pilot_q3-4b_S4_dev8_t1"
+CONFIG = "configs/runs/baseline_S4_all114.yaml"
+RUN_ID = "20261025-0240_base_q3-4b_S4_all114_t1"
 MODE = "run"  # "keycheck" or "run"
 
 # --- Fixed setup (CLAUDE.md §3) -------------------------------------------------------------------
@@ -38,7 +38,7 @@ USER_LLM_ARGS = {"temperature": 0, "extra_body": {"provider": {"order": ["DeepIn
 JUDGE_LLM = "openrouter/openai/gpt-4.1-mini"  # P1: the code default azure/gpt-4.1-mini is unusable for us
 VLLM_PORT = 8000
 VLLM_FLAGS = [  # P2; --tensor-parallel-size is added at runtime from the GPU count
-    "--dtype", "half", "--max-model-len", "24576", "--gpu-memory-utilization", "0.90",
+    "--dtype", "half", "--max-model-len", "32768", "--gpu-memory-utilization", "0.90",  # D6
     "--enable-auto-tool-choice", "--tool-call-parser", "hermes",
 ]
 PROGRESS_EVERY_S = 60
@@ -153,6 +153,15 @@ def count_done(results_path: Path) -> int:
         return 0
 
 
+def tau2_status(log_path: Path) -> str:
+    """tau2's own latest status, e.g. "7/8 complete. ... 1 running: 29.0(38s R1)" (R1 = a rerun, L11/L12)."""
+    try:
+        lines = [l for l in log_path.read_text(encoding="utf-8", errors="replace").splitlines() if l.startswith("Status: ")]
+    except FileNotFoundError:
+        return ""
+    return lines[-1][len("Status: "):] if lines else ""
+
+
 def progress_line(done: int, total: int, elapsed_s: float) -> str:
     frac = done / total if total else 0.0
     bar = "#" * int(20 * frac) + "-" * (20 - int(20 * frac))
@@ -251,7 +260,7 @@ def run_tau2(cfg: dict, manifest: dict, topic: str | None) -> Path:
     while proc.poll() is None:
         time.sleep(PROGRESS_EVERY_S)
         done, elapsed = count_done(results), time.time() - t0
-        line = progress_line(done, total, elapsed)
+        line = progress_line(done, total, elapsed) + " | tau2: " + tau2_status(LOGS / "tau2.log")
         log(line)
         if total and done / total >= next_milestone and next_milestone < 1:
             notify(topic, f"{int(next_milestone * 100)}% done", f"{RUN_ID}\n{line}")

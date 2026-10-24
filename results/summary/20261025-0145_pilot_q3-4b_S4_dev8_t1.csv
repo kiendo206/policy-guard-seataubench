@@ -1,0 +1,2 @@
+run_id,repo_sha,n_planned,n_sims,n_crashed,pass1,pass1_tau2,n_overflow,prompt_tokens_p95,prompt_tokens_max,avg_turns,avg_sec_per_sim,user_cost_usd_per_sim,openrouter_spend_usd,language_correctness,user_sim_providers,retries,session_minutes
+20261025-0145_pilot_q3-4b_S4_dev8_t1,2c9c010,8,8,0,0.25,0.25,1,15849,15849,22.2,279.5,0.0015,0.0278,1.0,DeepInfra:61,29:ContextWindowExceededError,29.6

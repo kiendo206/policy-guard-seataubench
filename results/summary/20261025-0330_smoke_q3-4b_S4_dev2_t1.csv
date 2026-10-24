@@ -1,2 +1,2 @@
-run_id,repo_sha,n_planned,n_sims,n_crashed,pass1,avg_turns,avg_sec_per_sim,user_cost_usd_per_sim,openrouter_spend_usd,language_correctness,user_sim_providers,session_minutes
-20261025-0330_smoke_q3-4b_S4_dev2_t1,dbe2746,2,2,0,0.0,16.0,135.7,0.00092,0.0012,1.0,DeepInfra:4 Parasail:4 Venice:2,12.0
+run_id,repo_sha,n_planned,n_sims,n_crashed,pass1,pass1_tau2,n_overflow,prompt_tokens_p95,prompt_tokens_max,avg_turns,avg_sec_per_sim,user_cost_usd_per_sim,openrouter_spend_usd,language_correctness,user_sim_providers,retries,session_minutes
+20261025-0330_smoke_q3-4b_S4_dev2_t1,dbe2746,2,2,0,0.0,0.0,0,10860,10860,16.0,135.7,0.00092,0.0012,1.0,DeepInfra:4 Parasail:4 Venice:2,,12.0
