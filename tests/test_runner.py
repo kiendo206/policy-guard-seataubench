@@ -38,6 +38,17 @@ def test_tau2_cmd_s4_and_s1():
     assert "--auto-resume" in s4 and s4[s4.index("--save-to") + 1] == "RID"
     s1 = run.tau2_cmd({**cfg, "scenario": "english"}, "RID")
     assert "--lang-id" not in s1
+    user_args = json.loads(s4[s4.index("--user-llm-args") + 1])  # D4: pinned to DeepInfra, no fallbacks
+    assert user_args == {"temperature": 0, "extra_body": {"provider": {"order": ["DeepInfra"], "allow_fallbacks": False}}}
+
+
+def test_run_configs_load():
+    split = lambda name: set(json.loads((ROOT / "configs" / "splits" / f"{name}.json").read_text())["task_ids"])
+    pilot = run.load_config(ROOT, "configs/runs/pilot_S4_dev8_c8.yaml")["task_ids"]
+    assert len(pilot) == 8 and set(pilot) <= split("dev30")  # pilot stays inside the dev set
+    for name in ("baseline_S4_all114", "baseline_S1_all114"):
+        ids = run.load_config(ROOT, f"configs/runs/{name}.yaml")["task_ids"]
+        assert len(ids) == len(set(ids)) == 114 and set(ids) == split("dev30") | split("eval84")
 
 
 @pytest.mark.skipif(not BENCH.exists(), reason="needs ../SEATauBench")

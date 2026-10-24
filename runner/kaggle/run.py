@@ -24,8 +24,8 @@ from pathlib import Path
 
 # --- Set these for every push --------------------------------------------------------------------
 GIT_REF = "main"  # branch, tag or SHA; the run stops unless this file equals run.py at GIT_REF, and the SHA goes into the manifest
-CONFIG = "configs/runs/smoke_S4_dev2.yaml"
-RUN_ID = "20261025-0330_smoke_q3-4b_S4_dev2_t1"
+CONFIG = "configs/runs/pilot_S4_dev8_c8.yaml"
+RUN_ID = "20261025-0145_pilot_q3-4b_S4_dev8_t1"
 MODE = "run"  # "keycheck" or "run"
 
 # --- Fixed setup (CLAUDE.md §3) -------------------------------------------------------------------
@@ -33,6 +33,8 @@ REPO_URL = "https://github.com/kiendo206/policy-guard-seataubench.git"
 BENCH_URL = "https://github.com/SEACrowd/SEATauBench.git"
 BENCH_SHA = "312f3e6eb87c94ad2554a74cc4f4b96baa6f89f9"
 USER_LLM = "openrouter/qwen/qwen3-235b-a22b-2507"
+# D4: every user-simulator call goes to DeepInfra (fp8), so runs don't mix providers
+USER_LLM_ARGS = {"temperature": 0, "extra_body": {"provider": {"order": ["DeepInfra"], "allow_fallbacks": False}}}
 JUDGE_LLM = "openrouter/openai/gpt-4.1-mini"  # P1: the code default azure/gpt-4.1-mini is unusable for us
 VLLM_PORT = 8000
 VLLM_FLAGS = [  # P2; --tensor-parallel-size is added at runtime from the GPU count
@@ -110,7 +112,7 @@ def tau2_cmd(cfg: dict, run_id: str) -> list[str]:
     agent_args = {"temperature": 0, "api_base": f"http://127.0.0.1:{VLLM_PORT}/v1"}
     cmd += [
         "--agent-llm", f"hosted_vllm/{cfg['agent_model']}", "--agent-llm-args", json.dumps(agent_args),
-        "--user-llm", USER_LLM, "--user-llm-args", json.dumps({"temperature": 0}),
+        "--user-llm", USER_LLM, "--user-llm-args", json.dumps(USER_LLM_ARGS),
         "--task-ids", *cfg["task_ids"], "--num-trials", str(cfg["num_trials"]),
         "--max-concurrency", str(cfg["max_concurrency"]), "--seed", str(cfg["seed"]),
         "--save-to", run_id, "--auto-resume",
@@ -325,6 +327,7 @@ def main() -> None:
     finally:
         if vllm is not None:
             vllm.send_signal(signal.SIGINT)
+        time.sleep(60)  # OpenRouter's usage counter lags; an immediate read undercounted (L10)
         usage_after = openrouter_usage(key)
         if usage_before is not None and usage_after is not None:
             manifest["openrouter_spend_usd"] = round(usage_after - usage_before, 4)  # user simulator + judge

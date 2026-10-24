@@ -3,6 +3,7 @@
 dev30  = 30 tasks sampled from the official train split with seed 20214906 (guards are designed on these only)
 eval84 = the other 84 of the 114 retail tasks
 test40 = the official test split (used for RQ2b)
+all114 = every retail task (the 'base' split; used for the Phase 0/1 baselines)
 
 Usage: uv run --no-project --python 3.12 python src/make_splits.py [path/to/SEATauBench]
 """
@@ -33,6 +34,7 @@ def main() -> None:
         "dev30": (dev, f"30 tasks sampled from 'train' with random.Random({SEED}).sample"),
         "eval84": (eval_, "all 'base' tasks not in dev30"),
         "test40": (test, "the official 'test' split, unchanged"),
+        "all114": (base, "the official 'base' split (all retail tasks), unchanged"),
     }
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     for name, (ids, how) in lists.items():

@@ -1,0 +1,9 @@
+# Pilot before the baseline (step 0.9): does concurrency 8 work, does the DeepInfra pin (D4) work,
+# and what is the real time per conversation? 8 dev30 tasks, mixed: NL assertions (3, 16, 29, 37, 110),
+# handoff (10, 50), plain writes (72).
+scenario: l2_domain            # S4
+agent_model: Qwen/Qwen3-4B-Instruct-2507
+task_ids: ["3", "10", "16", "29", "37", "50", "72", "110"]
+num_trials: 1
+max_concurrency: 8
+seed: 300

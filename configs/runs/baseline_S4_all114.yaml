@@ -1,0 +1,7 @@
+# Phase 0 baseline (step 0.9): unguarded Qwen3-4B on all 114 retail tasks, fully Vietnamese (S4), 1 trial.
+scenario: l2_domain            # S4
+agent_model: Qwen/Qwen3-4B-Instruct-2507
+task_list: configs/splits/all114.json
+num_trials: 1
+max_concurrency: 8
+seed: 300

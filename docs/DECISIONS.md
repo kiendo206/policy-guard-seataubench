@@ -2,6 +2,13 @@
 
 Every design decision, with date and reason. Newest first.
 
+### D4  2026-10-25  Pin the user simulator to one OpenRouter provider (DeepInfra, no fallbacks)
+- Decision: every call to `openrouter/qwen/qwen3-235b-a22b-2507` is sent with `extra_body.provider = {"order": ["DeepInfra"], "allow_fallbacks": false}` (`USER_LLM_ARGS` in `runner/kaggle/run.py`). This applies to all thesis runs from the pilot `20261025-0145` on.
+- Reason: in smoke run `20261025-0330`, OpenRouter routed 10 user turns to 3 providers (DeepInfra 4, Parasail 4, Venice 2). Different servers can make the simulated customer behave differently, which adds noise to guard comparisons. All active providers serve fp8; DeepInfra was the cheapest with 100% uptime ($0.09/$0.55 per M tokens, 2026-10-25).
+- Differs from the SEATauBench paper (default routing), which matters only when comparing absolute numbers with the paper.
+- Consequences: if DeepInfra is down, calls fail and become infrastructure errors that `--auto-resume` retries. `src/summarize_run.py` reports `user_sim_providers` per run to verify the pin.
+- The judge (gpt-4.1-mini) is not pinned.
+
 ### D3  2026-10-24  Public repo; LEARNING.md stays local; README.md is the guide
 - Decision: the GitHub repo `kiendo206/policy-guard-seataubench` is public (so Kaggle clones it without a token). `docs/LEARNING.md` is git-ignored and was removed from all commits before the first push. `README.md` explains how to reproduce the results.
 - Reason: the student's choice. The learning journal is for personal use, and reproduction needs only code, configs, splits, the runner, manifests and the README.
