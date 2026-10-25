@@ -2,6 +2,15 @@
 
 One entry per Kaggle run, newest first. Format: CLAUDE.md §7 step 3.
 
+## 20261025-0240_base_q3-4b_S4_all114_t1  (2026-10-25, Phase 0 baseline S4, OK)
+- Goal: unguarded Qwen3-4B on all 114 retail tasks, fully Vietnamese (S4), 1 trial.   - Config: `configs/runs/baseline_S4_all114.yaml` (concurrency 8, context 32,768, user sim pinned to DeepInfra)   - Git SHA: ef7b9dc
+- Result (`results/summary/20261025-0240_base_q3-4b_S4_all114_t1.csv`): 114/114 sims, 0 crashed, **pass^1 0.298** (`pass1_tau2` 0.298, n_overflow 0), avg 22.0 turns, 415.8 s/sim (median 365, max 1476), language correctness 1.0, DeepInfra:849, prompt tokens p95 15,959 / max 18,713, all 114 ended `user_stop`, all 40 NL-assertion chats judged.
+- Time: 117.0 min session (≈ 2.0 GPU-h).   - Cost: $0.2564 (≈ $0.0022/sim incl. judge; running total ≈ $0.29).
+- What went wrong: 3 chats (tasks 41, 55, 50) hit HTTP 429 "qwen3-235b is temporarily rate-limited upstream" (DeepInfra, no fallback per D4). tau2 reran each; all succeeded on retry 1. These are infrastructure reruns, so they count normally under D5 (L13). Harmless vLLM log line: FlashAttention-2 is unsupported on T4, so it falls back automatically.
+- Headroom (D6 rule): p95 15,959 < ~24k → 32,768 holds (confirm on S1).
+- Finding (from the log viewer): in 6 of 114 chats (e.g. task 26), the agent copied tool output with escaped Vietnamese (`Bàn phím cơ` = "Bàn phím cơ") into its reply to the customer. Language correctness (1.0) does not catch this. Candidate for the error census.
+- Next: S1 baseline; 0.11 log viewer; 0.10 refuse-all floor to interpret pass^1 (restraint vs action tasks).
+
 ## 20261025-0145_pilot_q3-4b_S4_dev8_t1  (2026-10-25, Phase 0 pilot, OK)
 - Goal: test concurrency 8, the DeepInfra pin (D4), and the real time and $ per conversation before the baseline.   - Config: `configs/runs/pilot_S4_dev8_c8.yaml` (dev tasks 3, 10, 16, 29, 37, 50, 72, 110; concurrency 8; context 24,576)   - Git SHA: 2c9c010
 - Result (`results/summary/20261025-0145_pilot_q3-4b_S4_dev8_t1.csv`): 8/8 sims, 0 crashed, pass^1 0.25 (tasks 10 and 50; `pass1_tau2` also 0.25), avg 22.2 turns, 279.5 s/sim at concurrency 8, language correctness 1.0, user simulator DeepInfra:61 (**pin works**), retries `29:ContextWindowExceededError`.

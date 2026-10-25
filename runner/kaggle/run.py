@@ -24,8 +24,8 @@ from pathlib import Path
 
 # --- Set these for every push --------------------------------------------------------------------
 GIT_REF = "main"  # branch, tag or SHA; the run stops unless this file equals run.py at GIT_REF, and the SHA goes into the manifest
-CONFIG = "configs/runs/baseline_S4_all114.yaml"
-RUN_ID = "20261025-0240_base_q3-4b_S4_all114_t1"
+CONFIG = "configs/runs/baseline_S1_all114.yaml"
+RUN_ID = "20261025-0831_base_q3-4b_S1_all114_t1"
 MODE = "run"  # "keycheck" or "run"
 
 # --- Fixed setup (CLAUDE.md §3) -------------------------------------------------------------------

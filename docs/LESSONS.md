@@ -2,6 +2,11 @@
 
 Mistakes and the rule each one produced. Format: CLAUDE.md §7 step 4.
 
+### L13  2026-10-25  The DeepInfra pin met upstream rate limits
+- What happened: in S4 baseline `20261025-0240`, 3 of 114 chats got HTTP 429 from OpenRouter ("temporarily rate-limited upstream"); tau2 reran them, and all succeeded on retry 1.
+- Root cause: with `allow_fallbacks: false` (D4), OpenRouter cannot route around a busy DeepInfra. That's the trade-off D4 accepted.
+- Rule from now on: check `retries` for `RateLimitError` after every run. If a run shows many (e.g. > 5% of chats) or any chat failing all retries, lower concurrency or add a fallback provider, and record the change in DECISIONS. Rate-limit reruns are infrastructure, not agent failures (D5 keeps them).
+
 ### L12  2026-10-25  tau2 hides agent failures by silently rerunning conversations
 - What happened: in the pilot, task 29's agent prompt exceeded the context limit; tau2 reran the whole chat and saved only the rerun. No field in results.json shows it.
 - Root cause: tau2 retries *any* exception up to 3 times (`runner/progress.py`) and drops chats that fail every retry from its metrics (`metrics/agent_metrics.py:145`). It cannot tell a server hiccup from an agent failure.

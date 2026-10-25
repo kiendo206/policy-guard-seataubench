@@ -1,0 +1,2 @@
+run_id,repo_sha,n_planned,n_sims,n_crashed,pass1,pass1_tau2,n_overflow,prompt_tokens_p95,prompt_tokens_max,avg_turns,avg_sec_per_sim,user_cost_usd_per_sim,openrouter_spend_usd,language_correctness,user_sim_providers,retries,session_minutes
+20261025-0240_base_q3-4b_S4_all114_t1,ef7b9dc,114,114,0,0.298,0.298,0,15959,18713,22.0,415.8,0.00142,0.2564,1.0,DeepInfra:849,41:RateLimitError 55:RateLimitError 50:RateLimitError,117.0
